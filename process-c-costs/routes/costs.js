@@ -103,12 +103,18 @@ router.post('/add', async (req, res) => {
             });
         }
 
-        // Reject past dates - enforces immutability required by the Computed Design Pattern
-        if (date && costDate < new Date()) {
-            return res.status(400).json({
-                id: 'past_date',
-                message: 'Cannot add cost items with a date in the past'
-            });
+        /* Reject costs in a month that has already passed.
+         * The Computed Design Pattern caches reports at monthly granularity, so only
+         * past months must be protected - costs in the current month are always allowed. */
+        if (date) {
+            const costYear = costDate.getUTCFullYear();
+            const costMonth = costDate.getUTCMonth() + 1;
+            if (isPastMonth(costYear, costMonth)) {
+                return res.status(400).json({
+                    id: 'past_date',
+                    message: 'Cannot add cost items for a month that has already passed'
+                });
+            }
         }
 
         // Verify the referenced user exists - DB call kept last to minimise unnecessary queries

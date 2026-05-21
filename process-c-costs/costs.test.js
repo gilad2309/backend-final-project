@@ -112,7 +112,8 @@ describe('POST /api/add (cost)', () => {
         expect(res.body).toHaveProperty('message');
     });
 
-    test('past date returns 400 with {id: "past_date", message}', async () => {
+    test('date in a past month returns 400 with {id: "past_date", message}', async () => {
+        // January 2020 is a past month - the server rejects it to protect Computed Design Pattern cache
         const res = await request(app)
             .post('/api/add')
             .send({ description: 'test-item', category: 'food', userid: 123123, sum: 10, date: '2020-01-01' });
